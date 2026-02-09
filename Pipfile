@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+torch = "*"
+torchvision = "*"
+opencv-python = "*"
+cap-from-youtube = "*"
+imread-from-url = "*"
+ultralytics = "*"
+huggingface-hub = "*"
+tqdm = "*"
+
+[dev-packages]
+onnx = "*"
+onnxruntime = "*"
+
+[requires]
+python_version = "3.11"

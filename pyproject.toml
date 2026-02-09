@@ -17,6 +17,7 @@ dependencies = [
     "opencv-python",
     "torchvision",
     "huggingface_hub",
+    "tqdm",
 ]
 
 [project.optional-dependencies]
