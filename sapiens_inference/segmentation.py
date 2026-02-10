@@ -35,6 +35,85 @@ def draw_segmentation_map(segmentation_map: np.ndarray) -> np.ndarray:
 
     return segmentation_img
 
+def segmentation_to_polygons(segmentation_map: np.ndarray,
+                             min_area: int = 10,
+                             epsilon_ratio: float = 0.001):
+    """
+    Convert segmentation map into polygons per class.
+
+    epsilon_ratio controls simplification:
+        smaller = more accurate
+        larger = fewer points
+    """
+
+    polygons = {}
+    
+    segmentation_map = segmentation_map.astype(np.uint8)
+
+    for class_id in np.unique(segmentation_map):
+
+        # if class_id == 0:
+        #     continue  # skip background
+
+        mask = (segmentation_map == class_id).astype(np.uint8) * 255
+
+        contours, _ = cv2.findContours(
+            mask,
+            cv2.RETR_EXTERNAL,
+            cv2.CHAIN_APPROX_SIMPLE
+        )
+
+        class_polys = []
+
+        for cnt in contours:
+
+            area = cv2.contourArea(cnt)
+
+            if area < min_area:
+                continue
+
+            epsilon = epsilon_ratio * cv2.arcLength(cnt, True)
+            approx = cv2.approxPolyDP(cnt, epsilon, True)
+
+            polygon = approx.reshape(-1, 2).tolist()
+
+            if len(polygon) >= 3:
+                class_polys.append(polygon)
+
+        if class_polys:
+            polygons[classes[class_id]] = class_polys
+
+    return polygons
+
+def polygons_to_mask(image_shape, polygons_dict):
+    """
+    Reconstruct segmentation mask from polygons.
+
+    image_shape: (H, W)
+    polygons_dict: {
+        "Torso": [ [[x,y], [x,y]...], ... ],
+        ...
+    }
+    """
+
+    h, w = image_shape
+    mask = np.zeros((h, w), dtype=np.uint8)
+
+    for class_name, polys in polygons_dict.items():
+
+        class_id = classes.index(class_name)
+
+        for poly in polys:
+
+            pts = np.array(poly, dtype=np.int32)
+
+            if pts.shape[0] < 3:
+                continue
+
+            cv2.fillPoly(mask, [pts], class_id)
+
+    return mask
+
 
 def postprocess_segmentation(results: torch.Tensor, img_shape: tuple[int, int]) -> np.ndarray:
     result = results[0].cpu()
@@ -46,7 +125,8 @@ def postprocess_segmentation(results: torch.Tensor, img_shape: tuple[int, int]) 
     segmentation_map = logits.argmax(dim=0, keepdim=True)
 
     # Covert to numpy array
-    segmentation_map = segmentation_map.float().numpy().squeeze()
+    # segmentation_map = segmentation_map.to(torch.int16).cpu().numpy().squeeze()
+    segmentation_map = segmentation_map.cpu().numpy().astype(np.uint8).squeeze()
 
     return segmentation_map
 

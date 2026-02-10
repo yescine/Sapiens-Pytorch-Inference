@@ -2,10 +2,11 @@ import torch
 import cv2
 import os
 import argparse
+import json
 from glob import glob
 from imread_from_url import imread_from_url
 
-from sapiens_inference.segmentation import SapiensSegmentation, SapiensSegmentationType, draw_segmentation_map
+from sapiens_inference.segmentation import SapiensSegmentation, SapiensSegmentationType, draw_segmentation_map, classes, segmentation_to_polygons, polygons_to_mask
 
 def main():
     parser = argparse.ArgumentParser(description="Sapiens Image Segmentation")
@@ -70,13 +71,36 @@ def main():
         print(f"Processing {path}...")
         segmentation_map = estimator(img)
 
+        polygons = segmentation_to_polygons(segmentation_map)
+        
+        # reconstructed_mask = polygons_to_mask(
+        #     segmentation_map.shape,
+        #     polygons
+        # )
+        # polygon_segmentation_img = draw_segmentation_map(reconstructed_mask)
+        # combined = cv2.addWeighted(img, 0.5, polygon_segmentation_img, 0.7, 0)
+
         segmentation_image = draw_segmentation_map(segmentation_map)
         combined = cv2.addWeighted(img, 0.5, segmentation_image, 0.7, 0)
 
-        if args.save:
-            out_path = os.path.join(args.out_dir, filename)
+        out_path = os.path.join(args.out_dir, filename)
+        if args.save: 
             cv2.imwrite(out_path, combined)
-            print(f"Saved to {out_path}")
+
+        # Save JSON metadata and segmentation map
+        json_data = {
+            "filename": filename,
+            "shape": img.shape[:2],
+            "model": f"sapiens-{args.model}",
+            "dtype": args.dtype,
+            "classes": classes,
+            "polygons": polygons
+        }
+        json_path = os.path.join(args.out_dir, os.path.splitext(filename)[0] + ".json")
+        with open(json_path, "w") as f:
+            json.dump(json_data, f)
+
+        print(f"Saved results to {args.out_dir}")
 
         # Show only if processing a single image
         if len(images_to_process) == 1:
