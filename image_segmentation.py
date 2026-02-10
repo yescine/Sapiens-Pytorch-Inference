@@ -17,6 +17,7 @@ def main():
     parser.add_argument("--dtype", type=str, default="float16", choices=["float16", "float32", "bfloat16"], help="Data type for inference")
     parser.add_argument("--save", action="store_true", default=True, help="Save the segmented image (default: True)")
     parser.add_argument("--no-save", action="store_false", dest="save", help="Do not save the segmented image")
+    parser.add_argument("--class_name", type=str, help="Class name for the images (falls back to parent dir if not provided)")
     args = parser.parse_args()
 
     # Map model size
@@ -68,6 +69,8 @@ def main():
             print(f"Failed to load image: {path}")
             continue
 
+        image_class = args.class_name if args.class_name else (os.path.basename(os.path.dirname(path)) if source_type == "file" else "unknown")
+
         print(f"Processing {path}...")
         segmentation_map = estimator(img)
 
@@ -90,6 +93,7 @@ def main():
         # Save JSON metadata and segmentation map
         json_data = {
             "filename": filename,
+            "class": image_class,
             "shape": img.shape[:2],
             "model": f"sapiens-{args.model}",
             "dtype": args.dtype,
