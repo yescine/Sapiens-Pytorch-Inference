@@ -14,6 +14,8 @@ def main():
     parser.add_argument("--out_dir", type=str, default="./runs", help="Output directory for segmented images")
     parser.add_argument("--model", type=str, default="1b", choices=["03b", "06b", "1b"], help="Model size: 03b, 06b, or 1b")
     parser.add_argument("--dtype", type=str, default="float16", choices=["float16", "float32", "bfloat16"], help="Data type for inference")
+    parser.add_argument("--save", action="store_true", default=True, help="Save the segmented image (default: True)")
+    parser.add_argument("--no-save", action="store_false", dest="save", help="Do not save the segmented image")
     args = parser.parse_args()
 
     # Map model size
@@ -71,9 +73,10 @@ def main():
         segmentation_image = draw_segmentation_map(segmentation_map)
         combined = cv2.addWeighted(img, 0.5, segmentation_image, 0.7, 0)
 
-        out_path = os.path.join(args.out_dir, f"seg_{filename}")
-        cv2.imwrite(out_path, combined)
-        print(f"Saved to {out_path}")
+        if args.save:
+            out_path = os.path.join(args.out_dir, filename)
+            cv2.imwrite(out_path, combined)
+            print(f"Saved to {out_path}")
 
         # Show only if processing a single image
         if len(images_to_process) == 1:
