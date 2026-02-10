@@ -16,10 +16,42 @@ class SapiensSegmentationType(Enum):
 
 
 random = np.random.RandomState(11)
-classes = ["Background", "Apparel", "Face Neck", "Hair", "Left Foot", "Left Hand", "Left Lower Arm", "Left Lower Leg",
-           "Left Shoe", "Left Sock", "Left Upper Arm", "Left Upper Leg", "Lower Clothing", "Right Foot", "Right Hand",
-           "Right Lower Arm", "Right Lower Leg", "Right Shoe", "Right Sock", "Right Upper Arm", "Right Upper Leg",
-           "Torso", "Upper Clothing", "Lower Lip", "Upper Lip", "Lower Teeth", "Upper Teeth", "Tongue"]
+
+classes = [
+    "background",        # 0
+    "apparel",          # 1
+    "face_neck",        # 2
+    "hair",             # 3
+
+    "l_foot",           # 4
+    "l_hand",           # 5
+    "l_lower_arm",      # 6
+    "l_lower_leg",      # 7
+    "l_shoe",           # 8
+    "l_sock",           # 9
+    "l_upper_arm",      # 10
+    "l_upper_leg",      # 11
+
+    "clothing_lower",   # 12
+
+    "r_foot",           # 13
+    "r_hand",           # 14
+    "r_lower_arm",      # 15
+    "r_lower_leg",      # 16
+    "r_shoe",           # 17
+    "r_sock",           # 18
+    "r_upper_arm",      # 19
+    "r_upper_leg",      # 20
+
+    "torso",            # 21
+    "clothing_upper",   # 22
+
+    "lower_lip",        # 23
+    "upper_lip",        # 24
+    "lower_teeth",      # 25
+    "upper_teeth",      # 26
+    "tongue"           # 27
+]
 
 colors = random.randint(0, 255, (len(classes) - 1, 3))
 colors = np.vstack((np.array([128, 128, 128]), colors)).astype(np.uint8)  # Add background color
