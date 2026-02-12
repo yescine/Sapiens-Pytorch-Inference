@@ -18,6 +18,7 @@ def main():
     parser.add_argument("--save", action="store_true", default=True, help="Save the segmented image (default: True)")
     parser.add_argument("--no-save", action="store_false", dest="save", help="Do not save the segmented image")
     parser.add_argument("--class_name", type=str, help="Class name for the images (falls back to parent dir if not provided)")
+    parser.add_argument("--classes-json", type=str, default="./data/classes.json", help="Path to classes JSON file")
     args = parser.parse_args()
 
     # Map model size
@@ -38,6 +39,11 @@ def main():
     model_type = model_map[args.model]
 
     estimator = SapiensSegmentation(model_type, dtype=dtype)
+
+    segmentation_classes = classes
+    if os.path.exists(args.classes_json):
+        with open(args.classes_json, 'r') as f:
+            segmentation_classes = json.load(f)
 
     if not os.path.exists(args.out_dir):
         os.makedirs(args.out_dir)
@@ -97,7 +103,7 @@ def main():
             "shape": img.shape[:2],
             "model": f"sapiens-{args.model}",
             "dtype": args.dtype,
-            "classes": classes,
+            "classes": segmentation_classes,
             "polygons": polygons
         }
         json_path = os.path.join(args.out_dir, os.path.splitext(filename)[0] + ".json")
