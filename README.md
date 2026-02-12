@@ -94,7 +94,7 @@ python image_normal_estimation.py
 * **Image Human Part Segmentation**:
 
 ```
-python image_segmentation.py
+python image_segmentation.py --img_dir ./data/score_zero --out_dir ./runs --classes-json ./data/classes.json --model "1b" --save 
 ```
 
 * **Image Pose Estimation**
