@@ -3,6 +3,7 @@ import cv2
 import os
 import argparse
 import json
+from tqdm import tqdm
 from glob import glob
 from imread_from_url import imread_from_url
 
@@ -150,7 +151,8 @@ def main():
     if not args.url and not args.img_dir:
         images_to_process.append(("url", "https://upload.wikimedia.org/wikipedia/commons/5/5b/Jogging_with_dog_at_Carcavelos_Beach.jpg"))
 
-    for source_type, path in images_to_process:
+    pbar = tqdm(images_to_process, desc="Processing images")
+    for source_type, path in pbar:
         if source_type == "url":
             img = imread_from_url(path)
             filename = os.path.basename(path).split("?")[0]
@@ -160,15 +162,16 @@ def main():
             img = cv2.imread(path)
             filename = os.path.basename(path)
 
+        pbar.set_description(f"Processing {filename}")
+
         if img is None:
-            print(f"Failed to load image: {path}")
+            pbar.write(f"Failed to load image: {path}")
             continue
 
         image_class = args.class_name if args.class_name else (
             os.path.basename(os.path.dirname(path)) if source_type == "file" else "unknown"
         )
 
-        print(f"Processing {path}...")
         segmentation_map = estimator(img)
 
         polygons = segmentation_to_polygons(segmentation_map)
@@ -223,8 +226,6 @@ def main():
 
             # optional: quick visibility
             # print(f"  CVAT polygons added: {added}")
-
-        print(f"Saved results to {args.out_dir}")
 
         if len(images_to_process) == 1:
             cv2.namedWindow("Segmentation Map", cv2.WINDOW_NORMAL)
