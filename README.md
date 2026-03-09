@@ -164,3 +164,9 @@ pip install -e .
 ```bash
 python image_segmentation.py --img_dir ./data/score_zero --out_dir ./runs --classes-json ./data/classes.json --model "1b" --save 
 ```
+
+Worker loop
+
+```bash
+python worker.py --batch-size 20 --debug --debug-dir ./tmp --config ./worker_config.yaml
+```

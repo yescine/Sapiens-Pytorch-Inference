@@ -18,7 +18,11 @@ dependencies = [
     "tqdm",
     "cap_from_youtube",
     "imread_from_url",
-    "ultralytics==8.4.21"
+    "ultralytics==8.4.21",
+    "pika",
+    "clickhouse-connect",
+    "python-dotenv",
+    "pyyaml"
 ]
 
 [project.optional-dependencies]

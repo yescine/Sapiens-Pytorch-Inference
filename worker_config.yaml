@@ -1,0 +1,12 @@
+rabbitmq:
+  exchange: "ai.jobs"
+  queue: "ai.inference.jobs"
+  routing_keys:
+    - "infer.meta_sapien.segmentation.#"
+
+models:
+  meta_sapien_segmentation:
+    version: "2026.03.01"
+    model_family: "sapiens-1b"
+    dtype: "float16"
+    script: "./image_segmentation.py"
