@@ -19,9 +19,10 @@ def load_config(yaml_path):
     with open(yaml_path, 'r') as f:
         return yaml.safe_load(f)
 
-def get_rabbitmq_connection():
+def get_rabbitmq_connection(heartbeat=60):
     url = os.environ.get('RABBITMQ_URL', 'amqp://guest:guest@localhost:5672/')
     parameters = pika.URLParameters(url)
+    parameters.heartbeat = heartbeat
     return pika.BlockingConnection(parameters)
 
 def get_clickhouse_client():
@@ -120,9 +121,11 @@ def process_batch(channel, messages, estimator, ch_client, debug, debug_dir):
         tables[table]['frames'].append(method_frame)
         
     for table, data in tables.items():
+        insert_success = False
         try:
             # ClickHouse columns: image_id, model_version, model_family, part_name, polygons, shape, dtype
             ch_client.insert(table, data['rows'], column_names=['image_id', 'model_version', 'model_family', 'part_name', 'polygons', 'shape', 'dtype'])
+            insert_success = True
             
             # Ack messages only after successful insert
             for frame in data['frames']:
@@ -130,10 +133,18 @@ def process_batch(channel, messages, estimator, ch_client, debug, debug_dir):
             print(f"Inserted {len(data['rows'])} rows into {table} and acked messages.")
             
         except Exception as e:
-            print(f"ClickHouse insert failed for table {table}: {e}")
+            if not insert_success:
+                print(f"ClickHouse insert failed for table {table}: {e}")
+            else:
+                print(f"RabbitMQ ack failed for table {table}: {e}")
+                
             # Nack messages if insert failed so they can be retried
-            for frame in data['frames']:
-                channel.basic_nack(delivery_tag=frame.delivery_tag, requeue=True)
+            try:
+                for frame in data['frames']:
+                    channel.basic_nack(delivery_tag=frame.delivery_tag, requeue=True)
+            except Exception as nack_e:
+                print(f"Failed to nack messages: {nack_e}")
+                raise e
 
 
 def main():
@@ -185,7 +196,8 @@ def main():
     
     # Connect to RabbitMQ
     print("Connecting to RabbitMQ...")
-    connection = get_rabbitmq_connection()
+    heartbeat = 300 if device.type == "cpu" else 60
+    connection = get_rabbitmq_connection(heartbeat=heartbeat)
     channel = connection.channel()
     
     # Setup Exchange and Queue
