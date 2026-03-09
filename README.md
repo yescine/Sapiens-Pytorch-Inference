@@ -139,3 +139,28 @@ The original models are available at HuggingFace: https://huggingface.co/faceboo
 - **Sapiens**: https://github.com/facebookresearch/sapiens
 - **Sapiens Lite**: https://github.com/facebookresearch/sapiens/tree/main/lite
 - **HuggingFace Model**: https://huggingface.co/facebook/sapiens
+
+# ML workflow and worker
+
+Installation 
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+```
+
+CPU worker
+```bash
+pip install -r requirements-cpu.txt
+pip install -e .
+```
+GPU worker
+```bash
+pip install -r requirements-gpu.txt
+pip install -e .
+```
+
+
+```bash
+python image_segmentation.py --img_dir ./data/score_zero --out_dir ./runs --classes-json ./data/classes.json --model "1b" --save 
+```
