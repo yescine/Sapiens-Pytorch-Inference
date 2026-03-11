@@ -20,8 +20,8 @@ from .pose_classes_and_palettes import (
 
 class SapiensPoseEstimationType(Enum):
     POSE_ESTIMATION_03B = "sapiens-pose-0.3b-torchscript/sapiens_0.3b_goliath_best_goliath_AP_573_torchscript.pt2"
-    POSE_ESTIMATION_06B = "sapiens-pose-0.6b-torchscript/sapiens_0.6b_goliath_best_goliath_AP_600_torchscript.pt2"
-    POSE_ESTIMATION_1B = "sapiens-pose-1b-torchscript/sapiens_1b_goliath_best_goliath_AP_640_torchscript.pt2"
+    POSE_ESTIMATION_06B = "sapiens-pose-0.6b-torchscript/sapiens_0.6b_goliath_best_goliath_AP_609_torchscript.pt2"
+    POSE_ESTIMATION_1B = "sapiens-pose-1b-torchscript/sapiens_1b_goliath_best_goliath_AP_639_torchscript.pt2"
     
 
 class SapiensPoseEstimation:
