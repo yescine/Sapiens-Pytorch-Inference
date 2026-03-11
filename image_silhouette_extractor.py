@@ -162,23 +162,10 @@ def main():
 
         # Sapiens/MMPose exact crop padding logic reverse-engineered
         bx1, by1, bx2, by2 = map(float, bbox[:4])
-        bw, bh = bx2 - bx1, by2 - by1
-        cx, cy = bx1 + bw / 2.0, by1 + bh / 2.0
-        
-        # 1024x768 input size -> 768 / 1024 aspect ratio
-        aspect_ratio = 768.0 / 1024.0 
-        if bw > aspect_ratio * bh:
-            bh = bw / aspect_ratio
-        else:
-            bw = bh * aspect_ratio
-            
-        # 1.25x context multiplier
-        bw *= 1.25
-        bh *= 1.25
-        
-        # Top-left of the padded box
-        px1 = cx - bw / 2.0
-        py1 = cy - bh / 2.0
+        bw = bx2 - bx1
+        bh = by2 - by1
+        px1 = bx1
+        py1 = by1
 
         # 3 & 4. Slicing limbs and calculating intersections
         for limb_name, (kp1_name, kp2_name) in LIMBS.items():
