@@ -32,8 +32,7 @@ LIMBS = {
     "lowerleg_left": ("left_knee", "left_ankle"),
     "upperleg_right": ("right_hip", "right_knee"),
     "lowerleg_right": ("right_knee", "right_ankle"),
-    "torso_left": ("left_shoulder", "left_hip"),
-    "torso_right": ("right_shoulder", "right_hip"),
+    "torso": ("middle_shoulder", "middle_hip"),
 }
 
 def find_edge(mask, start_x, start_y, dx, dy, step=1, max_dist=2000):
@@ -59,6 +58,29 @@ def find_edge(mask, start_x, start_y, dx, dy, step=1, max_dist=2000):
         y += dy * step
 
     return [int(x), int(y)]
+
+def add_virtual_torso_points(kpts: dict):
+    required = ["left_shoulder", "right_shoulder", "left_hip", "right_hip"]
+    if not all(name in kpts for name in required):
+        return kpts
+
+    ls = kpts["left_shoulder"]
+    rs = kpts["right_shoulder"]
+    lh = kpts["left_hip"]
+    rh = kpts["right_hip"]
+
+    kpts = dict(kpts)
+    kpts["middle_shoulder"] = (
+        (ls[0] + rs[0]) / 2.0,
+        (ls[1] + rs[1]) / 2.0,
+        min(ls[2], rs[2])
+    )
+    kpts["middle_hip"] = (
+        (lh[0] + rh[0]) / 2.0,
+        (lh[1] + rh[1]) / 2.0,
+        min(lh[2], rh[2])
+    )
+    return kpts
 
 def main():
     parser = argparse.ArgumentParser(description="Sapiens Image Silhouette Extractor")
@@ -155,6 +177,8 @@ def main():
         if not kpts:
             print(f"Warning: No keypoints found for {filename}!")
             continue
+        
+        kpts = add_virtual_torso_points(kpts)
 
         # Draw on pose_result_img so we can visually verify alignment with the original stick-figure!
         draw_img = pose_result_img.copy() if pose_result_img is not None else img.copy()
